@@ -112,6 +112,7 @@ def main():
             break
         else:
             print("\nError: Invalid input.")
+
 if __name__ == "__main__":
     main()
 
