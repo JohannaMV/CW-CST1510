@@ -11,7 +11,7 @@ def verify_password(plain_text_pass, hashed_pass):
     hashed_pass_bytes = hashed_pass.encode('utf-8')
     return bcrypt.checkpw(pass_bytes, hashed_pass_bytes)
 
-USER_DATA_FILE = "use.txt"
+USER_DATA_FILE = "user.txt"
 def register(username, password):
     open(USER_DATA_FILE, "a").close()
     for line in open(USER_DATA_FILE, "r"):
@@ -42,10 +42,15 @@ def login (username, password):
         return False
 
 def validate_username(username):
-    pass
+    if len(username) < 3:
+        return False, "Username must be at least 3 characters long."
+    return True, ""
+
 
 def validate_password(password):
-    pass
+    if len(password) < 6:
+        return False, "Password must be at least 6 characters long."
+    return True, ""
 
 def display_menu():
     """displays menu options"""
