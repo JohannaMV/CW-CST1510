@@ -8,7 +8,8 @@ def create_users_table(conn):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
             password_hash TEXT NOT NULL,
-            role TEXT DEFAULT 'user'
+            role TEXT DEFAULT 'user',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
     conn.commit()
@@ -18,13 +19,13 @@ def create_cyber_incidents_table(conn):
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS cyber_incidents (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT,
-            incident_type TEXT,
-            severity TEXT,
-            status TEXT,
+            date TEXT NOT NULL,
+            incident_type TEXT NOT NULL,
+            severity TEXT NOT NULL,
+            status TEXT NOT NULL,
             description TEXT,
-            report_date TEXT,
-            created_at TEXT
+            reported_by TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
     conn.commit()
@@ -34,12 +35,14 @@ def create_datasets_metadata_table(conn):
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS datasets_metadata (
-            dataset_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            rows  INTEGER NOT NULL,
-            columns INTEGER NOT NULL,
-            uploaded_by TEXT,
-            uploaded_date DATE NOT NULL
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            dataset_name TEXT NOT NULL,
+            category  INTEGER NOT NULL,
+            source INTEGER NOT NULL,
+            last_updated TEXT,
+            record_count INTEGER,
+            file_size_mb REAL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
     conn.commit()
@@ -49,13 +52,17 @@ def create_it_tickets_table(conn):
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS it_tickets (
-            ticket_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ticket_id TEXT UNIQUE NOT NULL,
             priority TEXT,
-            description TEXT,
             status TEXT,
+            category TEXT,
+            subject TEXT NOT NULL,
+            description TEXT,
+            created_date TEXT,
+            resolved_date TEXT,
             assigned_to TEXT,
-            created_at DATETIME NOT NULL,
-            resolution_time_hours INTEGER NOT NULL
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
     conn.commit()

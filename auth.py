@@ -11,7 +11,7 @@ def verify_password(plain_text_pass, hashed_pass):
     hashed_pass_bytes = hashed_pass.encode('utf-8')
     return bcrypt.checkpw(pass_bytes, hashed_pass_bytes)
 
-USER_DATA_FILE = "user.txt"
+USER_DATA_FILE = "DATA/user.txt"
 def register(username, password):
     open(USER_DATA_FILE, "a").close()
     for line in open(USER_DATA_FILE, "r"):

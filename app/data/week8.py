@@ -4,13 +4,13 @@ import bcrypt
 from pathlib import Path
 
 # Define paths
-DATA_DIR = Path("DATA")
+DATA_DIR = Path("../../DATA")
 DB_PATH = DATA_DIR/"intelligence_platform.db"
 
 # Create DATA folder if it doesn't exist
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-conn=sqlite3.connect('DATA/intelligence_platform.db')
+conn=sqlite3.connect('../../DATA/intelligence_platform.db')
 cursor=conn.cursor()
 
 cursor.execute("""

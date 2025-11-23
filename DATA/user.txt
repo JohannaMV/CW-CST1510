@@ -1,0 +1,3 @@
+Alice:$2b$12$Ta/Kd/qBx59K22Cp26CrnOW6ykseMpEuoNj/z/pwoz6/Dqcn8V7L6
+bob:$2b$12$FTu8MichmZwN0I88JUH9Femi3Ku.e/hfGiazlA/JGQfPm0T6t.nq6
+Johanna:$2b$12$1anJsTLcZoVleqNx8zPGeel/mLrEPLLaEWRymYSBBiYtEIi.uqCL6
