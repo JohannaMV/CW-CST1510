@@ -58,37 +58,41 @@ def login_user(username, password):
         return False, "Invalid password."
 
 
-def migrate_users_from_file(filepath='DATA/users.txt'):
-    """Migrate users from text file to database."""
+def migrate_users_from_file(conn, filepath=DATA_DIR / "user.txt"):
+    """
+    Migrate users from users.txt to the database.
+
+    This is a COMPLETE IMPLEMENTATION as an example.
+
+    Args:
+        conn: Database connection
+        filepath: Path to users.txt file
+    """
     if not filepath.exists():
-        print(f"⚠️ File not found: {filepath}")
+        print(f"File not found: {filepath}")
         print("   No users to migrate.")
         return
 
     cursor = conn.cursor()
     migrated_count = 0
 
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with open(filepath, 'r') as f:
         for line in f:
             line = line.strip()
             if not line:
                 continue
 
-            # Parse line: username,password[,role]
+            # Parse line: username,password_hash
             parts = line.split(',')
             if len(parts) >= 2:
                 username = parts[0]
-                password = parts[1]
-                role = parts[2] if len(parts) > 2 else 'user'
+                password_hash = parts[1]
 
-                # Hash password
-                password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-                # Insert or ignore if already exists
+                # Insert user (ignore if already exists)
                 try:
                     cursor.execute(
                         "INSERT OR IGNORE INTO users (username, password_hash, role) VALUES (?, ?, ?)",
-                        (username, password_hash, role)
+                        (username, password_hash, 'user')
                     )
                     if cursor.rowcount > 0:
                         migrated_count += 1
