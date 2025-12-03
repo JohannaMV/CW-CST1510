@@ -1,10 +1,10 @@
-def insert_dataset(conn, dataset_name, category, source, last_updated, record_count, file_size_mb):
+def insert_dataset(conn, dataset_id, name, row, columns, uploaded_by, upload_date):
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO datasets_metadata
-        (dataset_name, category, source, last_updated, record_count, file_size_mb)
+        (dataset_id, name, row, columns, uploaded_by, upload_date)
         VALUES (?, ?, ?, ?, ?, ?)
-    """, (dataset_name, category, source, last_updated, record_count, file_size_mb))
+    """, (dataset_id, name, row, columns, uploaded_by, upload_date))
     conn.commit()
     return cursor.lastrowid
 
@@ -28,3 +28,15 @@ def delete_dataset(conn, dataset_id):
     cursor.execute("DELETE FROM datasets_metadata WHERE id = ?", (dataset_id,))
     conn.commit()
     return cursor.rowcount
+
+def get_dataset_by_uploader(conn, min_rows=1000):
+    """counts datasets by uploader if they have more than min rows"""
+    query = """
+    SELECT uploaded_by, COUNT(*) as count
+    FROM datasets_metadata
+    WHERE rows > ?
+    GROUP BY uploaded_by
+    ORDER BY count DESC
+    """
+    df= pd.read_sql_query(query, conn, params=(min_rows,))
+    return df

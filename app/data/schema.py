@@ -18,14 +18,12 @@ def create_cyber_incidents_table(conn):
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS cyber_incidents (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT NOT NULL,
-            incident_type TEXT NOT NULL,
+            incident_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TIMESTAMP NOT NULL,
             severity TEXT NOT NULL,
+            category TEXT NOT NULL,
             status TEXT NOT NULL,
-            description TEXT,
-            reported_by TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            description TEXT
         )
     """)
     conn.commit()
@@ -35,14 +33,12 @@ def create_datasets_metadata_table(conn):
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS datasets_metadata (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            dataset_name TEXT NOT NULL,
-            category  INTEGER NOT NULL,
-            source INTEGER NOT NULL,
-            last_updated TEXT,
-            record_count INTEGER,
-            file_size_mb REAL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            dataset_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            rows  INTEGER NOT NULL,
+            columns INTEGER NOT NULL,
+            uploaded_by TEXT,
+            upload_date DATE NOT NULL
         )
     """)
     conn.commit()
@@ -52,17 +48,13 @@ def create_it_tickets_table(conn):
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS it_tickets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ticket_id TEXT UNIQUE NOT NULL,
-            priority TEXT,
-            status TEXT,
-            category TEXT,
-            subject TEXT NOT NULL,
+            ticket_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            priority TEXT NOT NULL,
             description TEXT,
-            created_date TEXT,
-            resolved_date TEXT,
+            status TEXT,
             assigned_to TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at DATE TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            resolution_time_hours INTEGER NOT NULL
         )
     """)
     conn.commit()

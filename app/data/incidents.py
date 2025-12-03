@@ -1,7 +1,7 @@
 import pandas as pd
 from app.data.db import connect_database
 
-def insert_incident(conn, date, incident_type, severity, status, description, reported_by=None):
+def insert_incident(conn, incident_id, timestamp, severity, category, status, description):
     """
     Insert a new cyber incident into the database.
     """
@@ -9,11 +9,11 @@ def insert_incident(conn, date, incident_type, severity, status, description, re
 
     sql = """
     INSERT INTO cyber_incidents
-    (date, incident_type, severity, status, description, reported_by)
+    (incident_id, timestamp, severity, category, status, description)
     VALUES (?, ?, ?, ?, ?, ?)
     """
 
-    cursor.execute(sql, (date, incident_type, severity, status, description, reported_by))
+    cursor.execute(sql, (incident_id, timestamp, severity, category, status, description))
     conn.commit()
 
     return cursor.lastrowid
@@ -48,9 +48,9 @@ def get_incidents_by_type_count(conn):
     Uses: SELECT, FROM, GROUP BY, ORDER BY
     """
     query = """
-    SELECT incident_type, COUNT(*) as count
+    SELECT category, COUNT(*) as count
     FROM cyber_incidents
-    GROUP BY incident_type
+    GROUP BY category
     ORDER BY count DESC
     """
     df = pd.read_sql_query(query, conn)
@@ -62,10 +62,10 @@ def get_high_severity_by_status(conn):
     Uses: SELECT, FROM, WHERE, GROUP BY, ORDER BY
     """
     query = """
-    SELECT status, COUNT(*) as count
+    SELECT severity, COUNT(*) as count
     FROM cyber_incidents
     WHERE severity = 'High'
-    GROUP BY status
+    GROUP BY severity
     ORDER BY count DESC
     """
     df = pd.read_sql_query(query, conn)
@@ -77,9 +77,9 @@ def get_incident_types_with_many_cases(conn, min_count=5):
     Uses: SELECT, FROM, GROUP BY, HAVING, ORDER BY
     """
     query = """
-    SELECT incident_type, COUNT(*) as count
+    SELECT category, COUNT(*) as count
     FROM cyber_incidents
-    GROUP BY incident_type
+    GROUP BY category
     HAVING COUNT(*) > ?
     ORDER BY count DESC
     """
