@@ -5,15 +5,18 @@ def insert_ticket(conn, ticket_id, priority, description, status, assigned_to, c
     cursor.execute("""
         INSERT INTO it_tickets
         (ticket_id, priority, description, status, assigned_to, created_at, resolution_time_hours)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (ticket_id, priority, description, status, assigned_to, created_at, resolution_time_hours))
     conn.commit()
     return cursor.lastrowid
 
-def get_ticket_by_id(conn, ticket_id):
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM it_tickets WHERE ticket_id = ?", (ticket_id,))
-    return cursor.fetchone()
+def get_all_tickets(conn):
+    """gets all tickets"""
+    df = pd.read_sql_query(
+        "SELECT * FROM it_tickets ORDER BY ticket_id DESC",
+        conn
+    )
+    return df
 
 def update_ticket_status(conn, ticket_id, new_status):
     cursor = conn.cursor()

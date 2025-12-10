@@ -1,3 +1,4 @@
+import pandas as pd
 def insert_dataset(conn, dataset_id, name, row, columns, uploaded_by, upload_date):
     cursor = conn.cursor()
     cursor.execute("""
@@ -8,10 +9,13 @@ def insert_dataset(conn, dataset_id, name, row, columns, uploaded_by, upload_dat
     conn.commit()
     return cursor.lastrowid
 
-def get_dataset_by_id(conn, dataset_id):
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM datasets_metadata WHERE id = ?", (dataset_id,))
-    return cursor.fetchone()
+def get_all_datasets(conn):
+    """gets all dataset metadata as a df"""
+    df = pd.read_sql_query(
+    "SELECT * FROM datasets_metadata ORDER BY dataset_id DESC",
+    conn
+    )
+    return df
 
 def update_dataset_stats(conn, dataset_id, new_record_count, new_file_size):
     cursor = conn.cursor()

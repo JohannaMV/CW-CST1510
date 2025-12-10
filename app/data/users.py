@@ -1,18 +1,25 @@
 from app.data.db import connect_database
 
-def insert_user(conn, username, password_hash, role='user'):
+def get_user_by_username(username):
+    """Retrieve user by username."""
+    conn = connect_database()
     cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO users (username, password_hash, role)
-        VALUES (?, ?, ?)
-    """, (username, password_hash, role))
-    conn.commit()
-    return cursor.lastrowid
+    cursor.execute(
+        "SELECT * FROM users WHERE username = ?",
+        (username,)
+    )
+    user = cursor.fetchone()
+    conn.close()
+    return user
 
-def get_user_by_username(conn, username):
+def insert_user(username, password_hash, role='user'):
+    """Insert new user."""
+    conn = connect_database()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
-    return cursor.fetchone()
+    cursor.execute(
+        "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+        (username, password_hash, role)
+    )
 
 def update_user_role(conn, username, new_role):
     cursor = conn.cursor()

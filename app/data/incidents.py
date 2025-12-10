@@ -85,3 +85,18 @@ def get_incident_types_with_many_cases(conn, min_count=5):
     """
     df = pd.read_sql_query(query, conn, params=(min_count,))
     return df
+
+def update_incident(conn, incident_id, timestamp, severity, category, status, description):
+    """update incident"""
+    cursor = conn.cursor()
+    sql_update = """ UPDATE cyber_incidents 
+        SET timestamp = ?, 
+        severity = ?, 
+        category = ?, 
+        status = ?, 
+        description = ?,
+        reported_by = ?
+    WHERE incident_id = ?"""
+    cursor.execute(sql_update, (timestamp, severity, category, status, description, incident_id))
+    conn.commit()
+    return cursor.rowcount

@@ -11,8 +11,9 @@ def verify_password(plain_text_pass, hashed_pass):
     hashed_pass_bytes = hashed_pass.encode('utf-8')
     return bcrypt.checkpw(pass_bytes, hashed_pass_bytes)
 
-USER_DATA_FILE = "DATA/user.txt"
-def register(username, password):
+USER_DATA_FILE = "DATA/users.txt"
+
+def register_user(username, password, role= "user"):
     open(USER_DATA_FILE, "a").close()
     for line in open(USER_DATA_FILE, "r"):
         existing_username = line.strip().split(":")[0]
@@ -22,30 +23,35 @@ def register(username, password):
 
     hashed_password = hash_password(password).decode('utf-8')
     with open(USER_DATA_FILE, "a") as file:
-        file.write(f"{username}:{hashed_password}\n")
+        file.write(f"{username}:{hashed_password}:{role}\n")
 
     print(f"{username} registered")
     return True
 
-def login (username, password):
-        with open (USER_DATA_FILE, "r") as file:
-            for line in file:
-                user, hashed_password= line.strip().split(":",1)
-                if user == username:
-                    if verify_password(password, hashed_password):
-                        print("Login successful")
-                        return True
-                    else:
-                        print("Login failed")
-                        return False
-        print("Username not found.")
-        return False
+def login(username, password):
+    with open(USER_DATA_FILE, "r") as file:
+        for line in file:
+            parts = line.strip().split(":")
+            if len(parts) != 3:
+                continue  # skip invalid lines
+
+            user, hashed_password, role = parts
+
+            if user == username:
+                if verify_password(password, hashed_password):
+                    print("Login successful")
+                    return True
+                else:
+                    print("Login failed")
+                    return False
+
+    print("Username not found.")
+    return False
 
 def validate_username(username):
     if len(username) < 3:
         return False, "Username must be at least 3 characters long."
     return True, ""
-
 
 def validate_password(password):
     if len(password) < 6:
@@ -96,8 +102,13 @@ def main():
                 print("ERROR: Passwords do not match.")
                 continue
 
+            #inserts role
+            role = input("Enter role (user/admin): ").strip().lower()
+            if role not in ["user", "admin"]:
+                role = "user"
+
             #register user
-            register(username, password)
+            register_user(username, password, role)
 
         elif choice == "2":
             #login
