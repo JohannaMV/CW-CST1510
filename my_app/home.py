@@ -1,7 +1,6 @@
 import streamlit as st
 
-st.set_page_config(page_title="Login / Register", page_icon="🔑 ",
-layout="centered")
+st.set_page_config(page_title="Home!", page_icon="🫧 ",layout="centered")
 
 # ---------- Initialise session state ----------
 if "users" not in st.session_state:
@@ -11,13 +10,13 @@ if "users" not in st.session_state:
 if "logged_in" not in st.session_state:
      st.session_state.logged_in = False
      st.session_state.username = ""
-st.title("🔐 Welcome")
+st.title(".⊹˖ᯓ★. ݁₊ Welcome! .⊹˖ᯓ★. ݁₊ ")
 
 if st.session_state.logged_in:
      st.success(f"Already logged in as **{st.session_state.username}**.")
      if st.button("Go to dashboard"):
          # Use the official navigation API to switch pages
-         st.switch_page("pages/1_dashboard.py")
+         st.switch_page("pages/1_Dashboard.py")
      st.stop() # Don’t show login/register again
 
 # ---------- Tabs: Login / Register ----------
@@ -37,7 +36,7 @@ with tab_login:
             st.session_state.username = login_username
             st.success(f"Welcome back, {login_username}!")
             # Redirect to dashboard page
-            st.switch_page("pages/1_dashboard.py")
+            st.switch_page("pages/1_Dashboard.py")
         else:
             st.error("Invalid username or password.")
 
@@ -59,4 +58,4 @@ with tab_register:
         # "Save" user in our simple in-memory store
         st.session_state.users[new_username] = new_password
         st.success("Account created! You can now log in from the Login tab.")
-        st.info("Tip: go to the Login tab and sign in with your new account.")
+        st.info("go to the Login tab and sign in with your new account.")
