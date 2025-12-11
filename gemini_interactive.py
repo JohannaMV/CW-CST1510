@@ -1,4 +1,4 @@
-import google.generativeai as genai
+from google import genai
 
 api_key = input("Enter your Gemini API key: ")
 

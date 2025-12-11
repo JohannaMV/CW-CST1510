@@ -1,11 +1,11 @@
 import pandas as pd
-def insert_dataset(conn, dataset_id, name, row, columns, uploaded_by, upload_date):
+def insert_dataset(conn, dataset_id, name, rows, columns, uploaded_by, upload_date):
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO datasets_metadata
-        (dataset_id, name, row, columns, uploaded_by, upload_date)
+        (dataset_id, name, rows, columns, uploaded_by, upload_date)
         VALUES (?, ?, ?, ?, ?, ?)
-    """, (dataset_id, name, row, columns, uploaded_by, upload_date))
+    """, (dataset_id, name, rows, columns, uploaded_by, upload_date))
     conn.commit()
     return cursor.lastrowid
 
@@ -17,19 +17,19 @@ def get_all_datasets(conn):
     )
     return df
 
-def update_dataset_stats(conn, dataset_id, new_record_count, new_file_size):
+def update_dataset(conn, dataset_id, rows, columns):
     cursor = conn.cursor()
     cursor.execute("""
         UPDATE datasets_metadata
-        SET record_count = ?, file_size_mb = ?
-        WHERE id = ?
-    """, (new_record_count, new_file_size, dataset_id))
+        SET rows = ?, columns = ? 
+        WHERE dataset_id = ?
+    """, (rows, columns, dataset_id))
     conn.commit()
     return cursor.rowcount
 
 def delete_dataset(conn, dataset_id):
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM datasets_metadata WHERE id = ?", (dataset_id,))
+    cursor.execute("DELETE FROM datasets_metadata WHERE dataset_id = ?", (dataset_id,))
     conn.commit()
     return cursor.rowcount
 

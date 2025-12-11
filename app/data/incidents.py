@@ -31,14 +31,17 @@ def update_incident_status(conn, incident_id, new_status):
     cursor.execute("""
         UPDATE cyber_incidents
         SET status = ?
-        WHERE id = ?
+        WHERE incident_id = ?
     """, (new_status, incident_id))
     conn.commit()
     return cursor.rowcount
 
 def delete_incident(conn, incident_id):
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM cyber_incidents WHERE id = ?", (incident_id,))
+    cursor.execute("""
+        DELETE FROM cyber_incidents
+        WHERE incident_id = ?
+    """, (incident_id,))
     conn.commit()
     return cursor.rowcount
 
@@ -94,8 +97,7 @@ def update_incident(conn, incident_id, timestamp, severity, category, status, de
         severity = ?, 
         category = ?, 
         status = ?, 
-        description = ?,
-        reported_by = ?
+        description = ?
     WHERE incident_id = ?"""
     cursor.execute(sql_update, (timestamp, severity, category, status, description, incident_id))
     conn.commit()
