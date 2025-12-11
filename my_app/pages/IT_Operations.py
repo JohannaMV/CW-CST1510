@@ -12,6 +12,20 @@ from google import genai
 
 st.set_page_config(page_title="IT Ticket!", page_icon="🫧", layout="wide")
 
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
+
+# Guard: if not logged in, send user back
+if not st.session_state.logged_in:
+    st.error("You must be logged in to view the dashboard.")
+    if st.button("Go to login page"):
+        st.switch_page("home.py")
+    st.stop()
+
+# Logged in — show dashboard
+
 conn = connect_database()
 
 st.title("🫧IT Tickets Dashboard!🫧")
@@ -81,48 +95,79 @@ with tab2:
         "Enter your Gemini API Key",
         type="password",
         placeholder="AIza...",
-        key="ai_api_key"
+        key="it_ai_api_key"
     )
     if not api_key:
-        st.warning("Please enter your Gemini API key to continue.")
+        st.info("Enter your API key to use the AI chat.")
         st.stop()
 
-    # Gemini client
+    # Initialize Gemini client
     client = genai.Client(api_key=api_key)
+    model_name = "gemini-2.0-flash"
 
-    # Pick first available model for generate_content
-    available = [m.name for m in client.models.list() if "generateContent" in getattr(m, "supported_actions", [])]
-    if not available:
-        st.error("No supported Gemini models found for generate_content.")
-        st.stop()
-    model_name = available[0]
+    # Initialize session state for chat with system prompt
+    if "it_ai_messages" not in st.session_state:
+        st.session_state.it_ai_messages = [
+            {
+                "role": "system",
+                "content": """You are an IT operations expert assistant.
+- Analyze IT tickets and operational issues
+- Suggest resolutions and troubleshooting steps
+- Prioritize critical issues
+- Use ITIL and standard IT operations terminology
+Tone: Professional, technical
+Format: Clear, structured responses."""
+            }
+        ]
 
-    # Initialize session state for chat
-    if "ai_messages" not in st.session_state:
-        st.session_state.ai_messages = []
+    # Clear Chat button
+    if st.button("!!Clear Chat!!"):
+        st.session_state.it_ai_messages = [
+            st.session_state.it_ai_messages[0]  # keep system message
+        ]
+        st.rerun()
 
-    # Display previous messages
-    for msg in st.session_state.ai_messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
+    # Display previous messages (skip system)
+    for msg in st.session_state.it_ai_messages:
+        if msg["role"] != "system":
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["content"])
 
     # Chat input
-    prompt = st.chat_input("Ask AI about IT Operations...", key="ai_prompt")
+    prompt = st.chat_input("Ask AI about IT operations...", key="it_ai_prompt")
     if prompt:
+        # Show user message
         with st.chat_message("user"):
             st.markdown(prompt)
-        st.session_state.ai_messages.append({"role": "user", "content": prompt})
 
-        conversation = "\n".join(f"{m['role']}: {m['content']}" for m in st.session_state.ai_messages)
+        # Add user message to history
+        st.session_state.it_ai_messages.append({"role": "user", "content": prompt})
 
-        # Get AI response
-        response = client.models.generate_content(model=model_name, contents=conversation)
-        reply = response.text
+        # Flatten conversation to a string for Gemini
+        conversation = ""
+        for msg in st.session_state.it_ai_messages:
+            if msg["role"] == "system":
+                conversation += f"System: {msg['content']}\n"
+            else:
+                conversation += f"{msg['role'].capitalize()}: {msg['content']}\n"
 
+        # Call Gemini API
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=conversation
+            )
+            reply = response.text
+        except Exception as e:
+            reply = f"API Error or quota exceeded: {str(e)}"
+
+        # Show assistant message
         with st.chat_message("assistant"):
             st.markdown(reply)
 
-        st.session_state.ai_messages.append({"role": "assistant", "content": reply})
+        # Save assistant response
+        st.session_state.it_ai_messages.append({"role": "assistant", "content": reply})
+
 
 # Logout button
 st.divider()

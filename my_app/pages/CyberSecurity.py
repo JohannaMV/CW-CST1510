@@ -12,6 +12,19 @@ from google import genai
 
 st.set_page_config(page_title="Cyber!", page_icon="🫧", layout="wide")
 
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
+
+# Guard: if not logged in, send user back
+if not st.session_state.logged_in:
+    st.error("You must be logged in to view the dashboard.")
+    if st.button("Go to login page"):
+        st.switch_page("home.py")
+    st.stop()
+
+# Logged in — show dashboard
 conn = connect_database()
 
 st.title("🫧Cyber Incidents Dashboard!🫧")
@@ -80,11 +93,11 @@ with tab2:
         st.info("Enter your API key to use the AI chat.")
         st.stop()
 
-    # Initialize Gemini client
+    # Gemini client
     client = genai.Client(api_key=api_key)
     model_name = "gemini-2.0-flash"
 
-    # Initialize session state for chat
+    # Session state with system prompt
     if "cyber_ai_messages" not in st.session_state:
         st.session_state.cyber_ai_messages = [
             {
@@ -93,38 +106,32 @@ with tab2:
 - Analyze incidents and threats
 - Provide technical guidance
 - Explain attack vectors and mitigations
-- Use MITRE ATT&CK / CVE terminology
+- Use standard terminology (MITRE ATT&CK, CVE)
 - Prioritize actionable recommendations
 Tone: Professional, technical
 Format: Clear, structured responses."""
             }
         ]
 
-    # Clear Chat Button
+    # Clear Chat button
     if st.button("!!Clear Chat!!"):
-        st.session_state.cyber_ai_messages = [
-            st.session_state.cyber_ai_messages[0]  # keep system message
-        ]
+        st.session_state.cyber_ai_messages = [st.session_state.cyber_ai_messages[0]]
         st.rerun()
 
-    # Display previous messages (skip system message)
+    # Display previous messages
     for msg in st.session_state.cyber_ai_messages:
         if msg["role"] != "system":
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
     # Chat input
-    # Chat input
-    prompt = st.chat_input("Ask AI about cybersecurity...", key="cyber_ai_prompt")
+    prompt = st.chat_input("Ask AI about Cybersecurity...", key="cyber_ai_prompt")
     if prompt:
-        # Show user message
         with st.chat_message("user"):
             st.markdown(prompt)
-
-        # Add user message to session state
         st.session_state.cyber_ai_messages.append({"role": "user", "content": prompt})
 
-        # Flatten conversation to a string
+        # Flatten conversation
         conversation = ""
         for msg in st.session_state.cyber_ai_messages:
             if msg["role"] == "system":
@@ -132,18 +139,18 @@ Format: Clear, structured responses."""
             else:
                 conversation += f"{msg['role'].capitalize()}: {msg['content']}\n"
 
-        # Call Gemini API
-        response = client.models.generate_content(
-            model=model_name,
-            contents=conversation
-        )
-        reply = response.text
+        # Call Gemini with quota handling
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=conversation
+            )
+            reply = response.text
+        except Exception as e:
+            reply = f"API Error or quota exceeded: {str(e)}"
 
-        # Show assistant message
         with st.chat_message("assistant"):
             st.markdown(reply)
-
-        # Save assistant response
         st.session_state.cyber_ai_messages.append({"role": "assistant", "content": reply})
 
 # LOGOUT BUTTON

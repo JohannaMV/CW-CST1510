@@ -12,6 +12,19 @@ from google import genai
 
 st.set_page_config(page_title="Dataset!", page_icon="🫧", layout="wide")
 
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
+
+# Guard: if not logged in, send user back
+if not st.session_state.logged_in:
+    st.error("You must be logged in to view the dashboard.")
+    if st.button("Go to login page"):
+        st.switch_page("home.py")
+    st.stop()
+
+# Logged in — show dashboard
 conn = connect_database()
 
 st.title("🫧Datasets Dashboard!🫧")
@@ -74,68 +87,71 @@ with tab2:
         "Enter your Gemini API Key",
         type="password",
         placeholder="AIza...",
-        key="dataset_ai_api_key"
+        key="data_ai_api_key"
     )
     if not api_key:
         st.info("Enter your API key to use the AI chat.")
         st.stop()
 
-    # Initialize Gemini client
+    # Gemini client
     client = genai.Client(api_key=api_key)
     model_name = "gemini-2.0-flash"
 
-    # Initialize session state for chat
-    if "dataset_ai_messages" not in st.session_state:
-        st.session_state.dataset_ai_messages = [
+    # Session state with system prompt
+    if "data_ai_messages" not in st.session_state:
+        st.session_state.data_ai_messages = [
             {
                 "role": "system",
-                "content": """You are a Data Science and Dataset expert assistant.
+                "content": """You are a data science expert assistant.
 - Analyze datasets and metadata
-- Provide guidance on dataset structure, rows, columns
-- Suggest improvements, normalization, or cleaning
-- Explain dataset use cases for ML, analysis, visualization
-- Prioritize actionable recommendations
-Tone: Professional, clear, and technical."""
+- Suggest preprocessing, transformations, and visualizations
+- Explain data patterns and insights
+- Use standard data science terminology
+Tone: Professional, technical
+Format: Clear, structured responses."""
             }
         ]
 
-    # Clear Chat Button
+    # Clear Chat button
     if st.button("!!Clear Chat!!"):
-        st.session_state.dataset_ai_messages = [
-            st.session_state.dataset_ai_messages[0]  # keep system message
-        ]
+        st.session_state.data_ai_messages = [st.session_state.data_ai_messages[0]]
         st.rerun()
 
     # Display previous messages
-    for msg in st.session_state.dataset_ai_messages:
+    for msg in st.session_state.data_ai_messages:
         if msg["role"] != "system":
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
     # Chat input
-    prompt = st.chat_input("Ask AI about datasets...", key="dataset_ai_prompt")
+    prompt = st.chat_input("Ask AI about Data Science...", key="data_ai_prompt")
     if prompt:
         with st.chat_message("user"):
             st.markdown(prompt)
-        st.session_state.dataset_ai_messages.append({"role": "user", "content": prompt})
+        st.session_state.data_ai_messages.append({"role": "user", "content": prompt})
 
-        # Prepare messages for Gemini
-        messages = [
-            {"role": m["role"], "content": m["content"]}
-            for m in st.session_state.dataset_ai_messages
-        ]
+        # Flatten conversation
+        conversation = ""
+        for msg in st.session_state.data_ai_messages:
+            if msg["role"] == "system":
+                conversation += f"System: {msg['content']}\n"
+            else:
+                conversation += f"{msg['role'].capitalize()}: {msg['content']}\n"
 
-        # Get AI response
-        response = client.models.generate_content(
-            model=model_name,
-            contents=messages
-        )
-        reply = response.text
+        # Call Gemini with quota handling
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=conversation
+            )
+            reply = response.text
+        except Exception as e:
+            reply = f"API Error or quota exceeded: {str(e)}"
 
         with st.chat_message("assistant"):
             st.markdown(reply)
+        st.session_state.data_ai_messages.append({"role": "assistant", "content": reply})
 
-        st.session_state.dataset_ai_messages.append({"role": "assistant", "content": reply})
 
 # LOGOUT BUTTON
 st.divider()
