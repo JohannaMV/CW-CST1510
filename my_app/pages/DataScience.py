@@ -152,8 +152,7 @@ Format: Clear, structured responses."""
             st.markdown(reply)
         st.session_state.data_ai_messages.append({"role": "assistant", "content": reply})
 
-
-# LOGOUT BUTTON
+# Logout button
 st.divider()
 if st.button("Log out"):
     st.session_state.logged_in = False

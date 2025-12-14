@@ -168,11 +168,10 @@ Format: Clear, structured responses."""
         # Save assistant response
         st.session_state.it_ai_messages.append({"role": "assistant", "content": reply})
 
-
 # Logout button
 st.divider()
 if st.button("Log out"):
- st.session_state.logged_in = False
- st.session_state.username = ""
- st.info("You have been logged out.")
- st.switch_page("home.py")
+    st.session_state.logged_in = False
+    st.session_state.username = ""
+    st.info("You have been logged out.")
+    st.switch_page("home.py")
